@@ -1,0 +1,28 @@
+server:
+  port: 9966
+  address: 0.0.0.0
+  servlet:
+    context-path: /
+
+spring:
+  application:
+    name: rocketmq-reput
+
+logging:
+  home: "."
+
+# rocketmq reput config
+rocketmq:
+  reput:
+    # 启动模式：三个选项：CLIENT,SERVER,MIXED(CLIENT+SERVER)
+    startMode: SERVER
+    client:
+      serverAddr: 'http://localhost:9966'
+      commitlog:
+        node0: '/Users/xuxd/Downloads'
+      # 扫描间隔，单位分钟
+      scanInterval: 1
+      # 过期时间，单位小时
+      expireTime: 48
+    server:
+      rootDir: ${user.dir}/rmq_home
