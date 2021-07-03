@@ -5,7 +5,9 @@ import com.xuxd.rocketmq.reput.config.ReputClientConfig;
 import com.xuxd.rocketmq.reput.config.ReputConfig;
 import com.xuxd.rocketmq.reput.enumc.StartMode;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Map;
+import java.util.Queue;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -58,18 +60,22 @@ public class ClientBootstrap extends Bootstrap {
 
     private void startScanTask() {
 
+        Queue<String> queue = new LinkedList<>(clientConfig.getCommitlog().keySet());
         clientConfig.getCommitlog().forEach((k, v) -> {
             if (!serviceCache.containsKey(k)) {
                 serviceCache.put(k, new CommitlogScanService(clientConfig, k, v));
             }
-            // delay a while
-            try {
-                TimeUnit.MILLISECONDS.sleep(10000);
-            } catch (InterruptedException ignore) {
-            }
             executorService.scheduleWithFixedDelay(() -> {
                  serviceCache.get(k).scan();
             }, clientConfig.getScanInterval(), clientConfig.getScanInterval(), TimeUnit.MINUTES);
+            queue.poll();
+            while (!queue.isEmpty()) {
+                // delay a while
+                try {
+                    TimeUnit.MILLISECONDS.sleep(10000);
+                } catch (InterruptedException ignore) {
+                }
+            }
         });
     }
 

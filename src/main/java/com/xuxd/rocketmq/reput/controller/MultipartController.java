@@ -29,9 +29,9 @@ public class MultipartController {
     public Object upload(@RequestParam("file") MultipartFile file, HttpServletRequest request) {
 
         Enumeration<String> names = request.getHeaderNames();
-        while (names.hasMoreElements()) {
-            System.out.println(names.nextElement());
-        }
+//        while (names.hasMoreElements()) {
+//            System.out.println(names.nextElement());
+//        }
         return ResponseData.create().success();
     }
 

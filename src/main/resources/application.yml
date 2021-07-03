@@ -23,9 +23,11 @@ rocketmq:
     client:
       serverAddr: 'http://localhost:9966'
       commitlog:
-        node0: '/Users/xuxd/Downloads'
+        node0: '/Users/xuxd/DemoCode/java/daily-demo/rocketmq-demo/rmq-home/zip'
       # 扫描间隔，单位分钟
       scanInterval: 1
+      # 过滤文件大小，MB
+      fileFilterSize: 950
       # 过期时间，单位小时
       expireTime: 48
     server:

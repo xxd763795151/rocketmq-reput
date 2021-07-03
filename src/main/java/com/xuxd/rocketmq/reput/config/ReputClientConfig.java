@@ -27,4 +27,9 @@ public class ReputClientConfig {
      * 过期时间，按小时为单位
      */
     private int expireTime = 48;
+
+    /**
+     * 文件大小，MB
+     */
+    private int fileFilterSize = 900;
 }

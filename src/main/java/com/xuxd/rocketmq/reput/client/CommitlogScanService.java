@@ -45,7 +45,7 @@ public class CommitlogScanService {
 
     private final long _1M = 1024 * 1024;
 
-    private final IOFileFilter sizeFilter = new SizeFileFilter(_1M * 3/* * 950*/);
+    private final IOFileFilter sizeFilter;
 
     private final IOFileFilter expireFilter;
 
@@ -61,6 +61,7 @@ public class CommitlogScanService {
         this.rootDirPath = rootDirPath;
         this.rootDir = new File(rootDirPath);
         this.expireFilter = new ExpireFileFilter(config.getExpireTime());
+        this.sizeFilter = new SizeFileFilter(_1M * config.getFileFilterSize());
         // load commit log to queue
 //        load();
         executorService.execute(() -> {
@@ -120,12 +121,15 @@ public class CommitlogScanService {
             if (zip == null) {
                 return false;
             }
+            log.info("start upload zip file: {}, size: {}", zip.getAbsolutePath(), zip.length());
             String upload = HttpClientUtil.upload(zip, config.getServerAddr() + "/upload", headers);
             ResponseData responseData = ResponseData.parse(upload);
 
             if (responseData.getCode() != ResponseCode.SUCCESS.getCode()) {
                 log.error("upload commit log failed, message: {}", responseData.getMessage());
             } else {
+                log.info("upload done, delete {}", zip.getAbsolutePath());
+                FileUtils.forceDelete(zip);
                 return true;
             }
         } catch (IOException e) {
@@ -136,6 +140,7 @@ public class CommitlogScanService {
     }
 
     public void scan() {
+        log.info("start scan expired file.");
         load();
     }
 
