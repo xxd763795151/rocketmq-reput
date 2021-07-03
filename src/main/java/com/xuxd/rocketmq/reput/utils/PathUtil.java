@@ -1,6 +1,7 @@
 package com.xuxd.rocketmq.reput.utils;
 
 import java.io.File;
+import java.util.Arrays;
 
 /**
  * rocketmq-reput.
@@ -10,7 +11,8 @@ import java.io.File;
  **/
 public final class PathUtil {
 
-    private PathUtil(){}
+    private PathUtil() {
+    }
 
     public static String getStoreDir(String rootDir) {
         return rootDir + File.separator + "store";
@@ -22,5 +24,19 @@ public final class PathUtil {
 
     public static String getZipDir(String rootDir) {
         return rootDir + File.separator + "zip";
+    }
+
+    public static String merge(String dir, String... path) {
+        if (path == null || path.length == 0) {
+            return dir;
+        }
+
+        StringBuilder dst = new StringBuilder(dir);
+        Arrays.stream(path).forEach(p -> dst.append(File.separator).append(p));
+        return dst.toString();
+    }
+
+    public static String getTmpDir(String dir) {
+        return merge(dir, "tmp");
     }
 }

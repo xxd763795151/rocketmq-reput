@@ -7,6 +7,7 @@ import com.xuxd.rocketmq.reput.enumc.ResponseCode;
 import com.xuxd.rocketmq.reput.utils.ArchiveUtil;
 import com.xuxd.rocketmq.reput.utils.HttpClientUtil;
 import com.xuxd.rocketmq.reput.utils.MD5Util;
+import com.xuxd.rocketmq.reput.utils.PathUtil;
 import java.io.File;
 import java.io.IOException;
 import java.net.URLEncoder;
@@ -81,6 +82,7 @@ public class CommitlogScanService {
         try {
             Map<String, String> params = new HashMap<>();
             params.put("fileName", file.getName());
+            params.put("node", node);
             String preResult = HttpClientUtil.get(config.getServerAddr() + "/pre/upload", params);
             ResponseData responseData = ResponseData.parse(preResult);
             if (ResponseCode.EXIST_FILE.getCode() == responseData.getCode()) {
@@ -111,6 +113,7 @@ public class CommitlogScanService {
         Map<String, String> headers = new HashMap<>();
         headers.put(RequestHeader.FILE_NAME, URLEncoder.encode(file.getName()));
         headers.put(RequestHeader.FILE_SIZE, String.valueOf(file.length()));
+        headers.put(RequestHeader.NODE, this.node);
         String md5 = MD5Util.md5(file);
         if (md5 != null) {
             headers.put(RequestHeader.MD5, md5);
@@ -121,15 +124,15 @@ public class CommitlogScanService {
             if (zip == null) {
                 return false;
             }
-            log.info("start upload zip file: {}, size: {}", zip.getAbsolutePath(), zip.length());
+            log.info("upload zip file: {}, size: {}", zip.getAbsolutePath(), zip.length());
             String upload = HttpClientUtil.upload(zip, config.getServerAddr() + "/upload", headers);
+            log.info("upload done, delete {}", zip.getAbsolutePath());
+            FileUtils.forceDelete(zip);
             ResponseData responseData = ResponseData.parse(upload);
 
             if (responseData.getCode() != ResponseCode.SUCCESS.getCode()) {
                 log.error("upload commit log failed, message: {}", responseData.getMessage());
             } else {
-                log.info("upload done, delete {}", zip.getAbsolutePath());
-                FileUtils.forceDelete(zip);
                 return true;
             }
         } catch (IOException e) {
@@ -140,7 +143,7 @@ public class CommitlogScanService {
     }
 
     public void scan() {
-        log.info("start scan expired file.");
+        log.info("start scan expired file. path: {}", rootDirPath);
         load();
     }
 

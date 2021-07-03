@@ -34,4 +34,5 @@ build/
 
 logs/
 rmq-home/
+rmq_home/
 upload/

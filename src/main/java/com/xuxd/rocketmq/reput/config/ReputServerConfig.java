@@ -1,5 +1,6 @@
 package com.xuxd.rocketmq.reput.config;
 
+import java.util.Map;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
@@ -16,4 +17,6 @@ import org.springframework.context.annotation.Configuration;
 public class ReputServerConfig {
 
     private String rootDir;
+
+    private Map<String, String> store;
 }

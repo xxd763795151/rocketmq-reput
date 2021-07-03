@@ -11,4 +11,5 @@ public interface RequestHeader {
     String FILE_NAME = "X-filename";
     String MD5 = "X-md5";
     String FILE_SIZE = "X-file-size";
+    String NODE = "X-node";
 }

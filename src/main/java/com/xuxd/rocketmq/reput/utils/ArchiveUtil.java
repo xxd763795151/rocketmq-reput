@@ -16,4 +16,8 @@ public class ArchiveUtil {
     public static File zip(File src) {
         return ShellUtil.zip(src);
     }
+
+    public static File unzip(File src) {
+        return ShellUtil.unzip(src);
+    }
 }

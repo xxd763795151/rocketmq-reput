@@ -32,3 +32,5 @@ rocketmq:
       expireTime: 48
     server:
       rootDir: ${user.dir}/rmq_home
+      store:
+        node0: '${rocketmq.reput.server.rootDir}/node0'

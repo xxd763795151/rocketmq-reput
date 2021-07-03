@@ -7,13 +7,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 
 /**
- * rocketmq-reput.
+ * rocketmq-reput. Do not expose api to other class.
  *
  * @author xuxd
  * @date 2021-07-03 10:42:39
  **/
 @Slf4j
-public class ShellUtil {
+class ShellUtil {
 
     private ShellUtil() {
     }
@@ -36,23 +36,58 @@ public class ShellUtil {
     public static File zip(File file) {
         String zipName = file.getAbsolutePath() + ".zip";
         String command = "zip -r " + zipName + " " + file.getAbsolutePath();
+//        String command = "cd " + parent + " && zip -r " + zipName + " " + file.getName();
         try {
             File zip = new File(zipName);
             if (zip.exists()) {
                 FileUtils.forceDelete(zip);
             }
-            Process process = Runtime.getRuntime().exec(command + " " + file.getAbsolutePath());
+            Process process = Runtime.getRuntime().exec(command);
 
             int status = process.waitFor();
-            if (status != 0 && !zip.exists()) {
-                log.error("zip error, cause: {}", getError(process));
-            } else {
+            if (status == 0 && zip.exists()) {
                 return zip;
+            } else {
+                log.error("zip error, cause: {}", getError(process));
             }
         } catch (Exception e) {
             log.error("zip error", e);
         }
         return null;
+    }
+
+    public static File unzip(File src) {
+        String zipPath = src.getAbsolutePath();
+        String tmpDir = PathUtil.getTmpDir(src.getParent());
+        FileUtil.forceMkdirIfNot(tmpDir);
+        String command = "unzip -o " + zipPath + " -d " + tmpDir;
+        try {
+            Process process = Runtime.getRuntime().exec(command);
+            if (process.waitFor() == 0) {
+                return new File(tmpDir);
+            } else {
+                log.error(command + " exec failed. cause: " + getError(process));
+            }
+        } catch (Exception e) {
+            log.error(command + " exec error.", e);
+        }
+        return null;
+    }
+
+    public static boolean mv(String src, String dst) {
+        String command = new StringBuffer("mv ").append(src).append(" ").append(dst).toString();
+        try {
+            Process process = Runtime.getRuntime().exec(command);
+            if (process.waitFor() == 0) {
+                return true;
+            } else {
+                log.error(command + " exec failed. cause: " + getError(process));
+                return false;
+            }
+        } catch (Exception e) {
+            log.error(command + " exec error.", e);
+        }
+        return false;
     }
 
     private static String getStringResult(Process process) throws Exception {

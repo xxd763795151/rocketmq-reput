@@ -49,9 +49,12 @@ public class ServerBootstrap extends Bootstrap {
         if (!rootDir.isDirectory()) {
             throw new IllegalStateException(rootDir + " is not a directory");
         }
-        forceMkdirIfNot(PathUtil.getStoreDir(rootPath));
-        forceMkdirIfNot(PathUtil.getCommitLogDir(rootPath));
-        forceMkdirIfNot(PathUtil.getZipDir(rootPath));
+        serverConfig.getStore().forEach((k, v) -> {
+            forceMkdirIfNot(PathUtil.getStoreDir(v));
+            forceMkdirIfNot(PathUtil.getCommitLogDir(v));
+            forceMkdirIfNot(PathUtil.getZipDir(v));
+        });
+
     }
 
     @Override public void shutdown() {
