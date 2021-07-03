@@ -4,11 +4,16 @@ import com.google.common.base.Throwables;
 import com.xuxd.rocketmq.reput.config.ReputConfig;
 import com.xuxd.rocketmq.reput.config.ReputServerConfig;
 import com.xuxd.rocketmq.reput.enumc.StartMode;
+import com.xuxd.rocketmq.reput.server.ReputMessageService;
 import com.xuxd.rocketmq.reput.utils.PathUtil;
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
+import org.apache.rocketmq.common.BrokerConfig;
+import org.apache.rocketmq.store.config.MessageStoreConfig;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Component;
 
@@ -30,6 +35,8 @@ public class ServerBootstrap extends Bootstrap {
 
     private final String rootPath;
 
+    private final Map<String, ReputMessageService> serviceCache = new HashMap<>();
+
     public ServerBootstrap(final ObjectProvider<ReputConfig> provider,
         final ObjectProvider<ReputServerConfig> serverProvider) {
         super(provider.getIfAvailable(ReputConfig::new));
@@ -42,6 +49,37 @@ public class ServerBootstrap extends Bootstrap {
 
     @Override public void start() {
         checkStoreHome();
+        startReputService();
+    }
+
+    private void startReputService() {
+        serverConfig.getStore().forEach((node, path) -> {
+            if (!serviceCache.containsKey(node)) {
+                String home = PathUtil.merge(serverConfig.getRootDir(), node);
+
+                BrokerConfig brokerConfig = new BrokerConfig();
+                brokerConfig.setRocketmqHome(home);
+
+                MessageStoreConfig messageStoreConfig = new MessageStoreConfig();
+                messageStoreConfig.setStorePathRootDir(PathUtil.getStoreDir(home));
+                messageStoreConfig.setStorePathCommitLog(PathUtil.getCommitLogDir(home));
+                messageStoreConfig.setFileReservedTime(serverConfig.getFileReservedTime());
+                messageStoreConfig.setDeleteWhen(serverConfig.getDeleteWhen());
+                messageStoreConfig.setEnableDLegerCommitLog(serverConfig.isEnableDledger());
+
+                try {
+                    ReputMessageService service = new ReputMessageService(serverConfig, brokerConfig, messageStoreConfig);
+                    serviceCache.put(node, service);
+                } catch (IOException e) {
+                    log.error("init service error, path: " + home, e);
+                }
+            }
+            try {
+                serviceCache.get(node).start();
+            } catch (Exception e) {
+                log.error("start service error, node: " + node, e);
+            }
+        });
     }
 
     private void checkStoreHome() {
@@ -58,7 +96,8 @@ public class ServerBootstrap extends Bootstrap {
     }
 
     @Override public void shutdown() {
-
+        serviceCache.values().stream().forEach(ReputMessageService::shutdown);
+        serviceCache.clear();
     }
 
     @Override public StartMode startMode() {

@@ -19,4 +19,19 @@ public class ReputServerConfig {
     private String rootDir;
 
     private Map<String, String> store;
+
+    private int maxNumsGetInQueue = 10000;
+
+    private int getNumsBatchInQueue = 32;
+
+    private int viewMessageMax = 20000;
+
+    private int getMessageMax = 10000;
+
+    private int fileReservedTime;
+
+    private String deleteWhen;
+
+    private boolean enableDledger = false;
+
 }

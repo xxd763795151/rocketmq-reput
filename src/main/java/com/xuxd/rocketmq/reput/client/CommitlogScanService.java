@@ -99,8 +99,16 @@ public class CommitlogScanService {
             }
         } catch (IOException e) {
             log.error("Upload commit log error. file: " + file.getAbsolutePath(), e);
+            reset();
         }
 
+    }
+
+    private void reset() {
+        synchronized (this) {
+            fileQueue.clear();
+            lastTime = 0;
+        }
     }
 
     /**
