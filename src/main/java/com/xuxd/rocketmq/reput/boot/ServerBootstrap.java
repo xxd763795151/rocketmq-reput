@@ -4,6 +4,7 @@ import com.google.common.base.Throwables;
 import com.xuxd.rocketmq.reput.config.ReputConfig;
 import com.xuxd.rocketmq.reput.config.ReputServerConfig;
 import com.xuxd.rocketmq.reput.enumc.StartMode;
+import com.xuxd.rocketmq.reput.server.QueryMessageService;
 import com.xuxd.rocketmq.reput.server.ReputMessageService;
 import com.xuxd.rocketmq.reput.utils.PathUtil;
 import java.io.File;
@@ -15,6 +16,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.rocketmq.common.BrokerConfig;
 import org.apache.rocketmq.store.config.MessageStoreConfig;
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
@@ -37,6 +39,9 @@ public class ServerBootstrap extends Bootstrap {
 
     private final Map<String, ReputMessageService> serviceCache = new HashMap<>();
 
+    @Autowired
+    private QueryMessageService messageService;
+
     public ServerBootstrap(final ObjectProvider<ReputConfig> provider,
         final ObjectProvider<ReputServerConfig> serverProvider) {
         super(provider.getIfAvailable(ReputConfig::new));
@@ -50,6 +55,7 @@ public class ServerBootstrap extends Bootstrap {
     @Override public void start() {
         checkStoreHome();
         startReputService();
+        messageService.registerReputService(serviceCache);
     }
 
     private void startReputService() {
