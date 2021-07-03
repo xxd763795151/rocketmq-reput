@@ -1,11 +1,15 @@
 package com.xuxd.rocketmq.reput.client;
 
+import com.xuxd.rocketmq.reput.beans.RequestHeader;
 import com.xuxd.rocketmq.reput.beans.ResponseData;
 import com.xuxd.rocketmq.reput.config.ReputClientConfig;
 import com.xuxd.rocketmq.reput.enumc.ResponseCode;
+import com.xuxd.rocketmq.reput.utils.ArchiveUtil;
 import com.xuxd.rocketmq.reput.utils.HttpClientUtil;
+import com.xuxd.rocketmq.reput.utils.MD5Util;
 import java.io.File;
 import java.io.IOException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -81,12 +85,54 @@ public class CommitlogScanService {
             if (ResponseCode.EXIST_FILE.getCode() == responseData.getCode()) {
                 log.error("stop upload, file already exist, message: {}", responseData.getMessage());
             } else {
-//                HttpClientUtil.upload(file, config.getServerAddr() + "/upload", null);
+                boolean success = doUpload(file);
+                for (int i = 0; i < 2 && !success; i++) {
+                    log.warn("retry upload: {}", file.getAbsolutePath());
+                    success = doUpload(file);
+                }
+                if (!success) {
+                    log.error("upload file: {} after retry 3 times, still failed.", file.getAbsolutePath());
+                }
             }
         } catch (IOException e) {
             log.error("Upload commit log error. file: " + file.getAbsolutePath(), e);
         }
 
+    }
+
+    /**
+     * upload file.
+     *
+     * @param file file.
+     * @return true: upload success, false: failed, retry.
+     */
+    private boolean doUpload(File file) {
+        Map<String, String> headers = new HashMap<>();
+        headers.put(RequestHeader.FILE_NAME, URLEncoder.encode(file.getName()));
+        headers.put(RequestHeader.FILE_SIZE, String.valueOf(file.length()));
+        String md5 = MD5Util.md5(file);
+        if (md5 != null) {
+            headers.put(RequestHeader.MD5, md5);
+        }
+        // compress and archive
+        try {
+            File zip = ArchiveUtil.zip(file);
+            if (zip == null) {
+                return false;
+            }
+            String upload = HttpClientUtil.upload(zip, config.getServerAddr() + "/upload", headers);
+            ResponseData responseData = ResponseData.parse(upload);
+
+            if (responseData.getCode() != ResponseCode.SUCCESS.getCode()) {
+                log.error("upload commit log failed, message: {}", responseData.getMessage());
+            } else {
+                return true;
+            }
+        } catch (IOException e) {
+            log.info("upload error.", e);
+            return false;
+        }
+        return false;
     }
 
     public void scan() {
@@ -116,10 +162,12 @@ public class CommitlogScanService {
         // sort by last modify time.
         Collections.sort(fileList, (o1, o2) -> (int) (o1.lastModified() - o2.lastModified()));
 
-        for (File file : fileList) {
-            if (file.lastModified() > lastTime) {
-                fileQueue.offer(file);
-                lastTime = file.lastModified();
+        synchronized (this) {  // there should not be concurrent , but for safety, lastTime must be latest.
+            for (File file : fileList) {
+                if (file.lastModified() > lastTime) {
+                    fileQueue.offer(file);
+                    lastTime = file.lastModified();
+                }
             }
         }
     }

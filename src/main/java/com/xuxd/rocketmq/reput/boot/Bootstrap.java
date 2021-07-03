@@ -30,12 +30,16 @@ public abstract class Bootstrap implements SmartInitializingSingleton {
     @Override public void afterSingletonsInstantiated() {
 
         if (mode == startMode() || mode == StartMode.MIXED) {
-            log.info("Starting {}", mode);
+            log.info("Starting {}", startMode());
+            printConfig();
             start();
             Runtime.getRuntime().addShutdownHook(new Thread(()->{
                 shutdown();
             }));
         }
 
+    }
+
+    public void printConfig() {
     }
 }

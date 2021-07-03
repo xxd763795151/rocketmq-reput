@@ -50,8 +50,6 @@ public class ClientBootstrap extends Bootstrap {
     }
 
     @Override public void start() {
-        log.info(clientConfig.toString());
-
         // scan the directory that store commitlog for upload server.
         if (!clientConfig.getCommitlog().isEmpty()) {
             startScanTask();
@@ -84,4 +82,7 @@ public class ClientBootstrap extends Bootstrap {
         return StartMode.CLIENT;
     }
 
+    @Override public void printConfig() {
+        log.info(clientConfig.toString());
+    }
 }

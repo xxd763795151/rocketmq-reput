@@ -41,7 +41,6 @@ public class ServerBootstrap extends Bootstrap {
     }
 
     @Override public void start() {
-        log.info(serverConfig.toString());
         checkStoreHome();
     }
 
@@ -73,5 +72,9 @@ public class ServerBootstrap extends Bootstrap {
                 Throwables.propagate(e);
             }
         }
+    }
+
+    @Override public void printConfig() {
+        log.info(serverConfig.toString());
     }
 }
