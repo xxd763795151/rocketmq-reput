@@ -11,6 +11,7 @@ import com.xuxd.rocketmq.reput.utils.PathUtil;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
@@ -43,6 +44,11 @@ public class CommitLogUploadService {
         File commitLogDir = new File(PathUtil.getCommitLogDir(nodePath));
         boolean exist = false;
         List<File> fileList = Arrays.asList(commitLogDir.listFiles());
+        Collections.sort(fileList, (o1, o2) -> o2.getName().compareTo(o1.getName()));
+        String last = !fileList.isEmpty() ? fileList.get(0).getName() : "";
+        if (fileName.compareTo(last) < 0) {
+            return ResponseData.create().fail(ResponseCode.OFFSET_TOO_SMALL.getCode(), ResponseCode.OFFSET_TOO_SMALL.getMessage() + ", current: " + fileName + ", last: " + last);
+        }
         for (File f : fileList) {
             if (f.getName().equals(fileName)) {
                 exist = true;

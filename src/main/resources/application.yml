@@ -19,7 +19,7 @@ logging:
 rocketmq:
   reput:
     # 启动模式：三个选项：CLIENT,SERVER,MIXED(CLIENT+SERVER)
-    startMode: SERVER
+    startMode: MIXED
     client:
       serverAddr: 'http://localhost:9966'
       commitlog:

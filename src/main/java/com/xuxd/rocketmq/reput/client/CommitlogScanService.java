@@ -7,7 +7,6 @@ import com.xuxd.rocketmq.reput.enumc.ResponseCode;
 import com.xuxd.rocketmq.reput.utils.ArchiveUtil;
 import com.xuxd.rocketmq.reput.utils.HttpClientUtil;
 import com.xuxd.rocketmq.reput.utils.MD5Util;
-import com.xuxd.rocketmq.reput.utils.PathUtil;
 import java.io.File;
 import java.io.IOException;
 import java.net.URLEncoder;
@@ -87,6 +86,8 @@ public class CommitlogScanService {
             ResponseData responseData = ResponseData.parse(preResult);
             if (ResponseCode.EXIST_FILE.getCode() == responseData.getCode()) {
                 log.error("stop upload, file already exist, message: {}", responseData.getMessage());
+            } else if (ResponseCode.OFFSET_TOO_SMALL.getCode() == responseData.getCode()) {
+                log.error("stop upload, {}", responseData.getMessage());
             } else {
                 boolean success = doUpload(file);
                 for (int i = 0; i < 2 && !success; i++) {
