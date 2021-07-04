@@ -79,7 +79,7 @@ public class CommitlogScanService {
             boolean success = doUpload(file);
             for (int i = 0; i < 2 && !success; i++) {
                 try {
-                    TimeUnit.SECONDS.sleep(5);
+                    TimeUnit.SECONDS.sleep(20);
                 } catch (InterruptedException ignore) {
                     log.warn("InterruptedException", ignore);
                 }
