@@ -53,10 +53,10 @@ public class ServerBootstrap extends Bootstrap {
     }
 
     @Override public void start() {
+        clearDirtyData();
         checkStoreHome();
         startReputService();
         messageService.registerReputService(serviceCache);
-        clearDirtyData();
     }
 
     private void clearDirtyData() {

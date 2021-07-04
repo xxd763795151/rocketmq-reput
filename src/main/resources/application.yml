@@ -20,8 +20,11 @@ rocketmq:
   reput:
     # 启动模式：三个选项：CLIENT,SERVER,MIXED(CLIENT+SERVER)
     startMode: MIXED
+    # CLIENT 模式的配置
     client:
+      # 连接SERVER模式启动的地址
       serverAddr: 'http://localhost:9966'
+      # rocketmq 的commitlog 位置
       commitlog:
         # 配置broker名称及该broker的commit log的存储目录
         broker-a: '/Users/xuxd/DemoCode/java/daily-demo/rocketmq-demo/rmq-home/zip'
@@ -31,11 +34,17 @@ rocketmq:
       fileFilterSize: 950
       # 过期时间，单位小时
       expireTime: 48
+    # SERVER 模式的配置
     server:
+      # 服务端文件保存时间(h)
       fileReservedTime: 48
+      # 过期文件删除时间
       deleteWhen: 04
+      # 是否启用Dledger模式
       enableDledger: false
+      # 文件存储目录
       rootDir: ${user.dir}/rmq_home
+      # 保存备份数据的地址
       store:
         # 配置broker名称及该broker的commit log的存储目录
         broker-a: '${rocketmq.reput.server.rootDir}/broker-a'
