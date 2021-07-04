@@ -88,6 +88,7 @@ public class CommitlogScanService {
             }
             if (!success) {
                 log.error("upload file: {} after retry 3 times, still failed, reset.", file.getAbsolutePath());
+                // when upload fail, must reset.
                 reset();
             }
         }
@@ -111,7 +112,7 @@ public class CommitlogScanService {
         } catch (IOException e) {
             log.error("network error, suspend a while.", e);
             try {
-                TimeUnit.SECONDS.sleep(3);
+                TimeUnit.SECONDS.sleep(60);
                 // retry
                 pass = preUpload(file);
             } catch (InterruptedException ignore) {
@@ -161,7 +162,7 @@ public class CommitlogScanService {
                 return true;
             }
         } catch (IOException e) {
-            log.info("upload error.", e);
+            log.error("upload error.", e);
             return false;
         }
         return false;
