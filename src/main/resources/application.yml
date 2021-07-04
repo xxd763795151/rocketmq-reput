@@ -19,7 +19,7 @@ logging:
 rocketmq:
   reput:
     # 启动模式：三个选项：CLIENT,SERVER,MIXED(CLIENT+SERVER)
-    startMode: MIXED
+    startMode: CLIENT
     # CLIENT 模式的配置
     client:
       # 连接SERVER模式启动的地址

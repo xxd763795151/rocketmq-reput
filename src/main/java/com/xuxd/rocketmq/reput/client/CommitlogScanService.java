@@ -20,6 +20,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.TimeUnit;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.AbstractFileFilter;
@@ -74,6 +75,26 @@ public class CommitlogScanService {
     }
 
     private void upload(File file) {
+        if (preUpload(file)) {
+            boolean success = doUpload(file);
+            for (int i = 0; i < 2 && !success; i++) {
+                try {
+                    TimeUnit.SECONDS.sleep(5);
+                } catch (InterruptedException ignore) {
+                    log.warn("InterruptedException", ignore);
+                }
+                log.warn("retry upload: {}", file.getAbsolutePath());
+                success = doUpload(file);
+            }
+            if (!success) {
+                log.error("upload file: {} after retry 3 times, still failed, reset.", file.getAbsolutePath());
+                reset();
+            }
+        }
+    }
+
+    private boolean preUpload(File file) {
+        boolean pass = false;
         try {
             Map<String, String> params = new HashMap<>();
             params.put("fileName", file.getName());
@@ -85,20 +106,19 @@ public class CommitlogScanService {
             } else if (ResponseCode.OFFSET_TOO_SMALL.getCode() == responseData.getCode()) {
                 log.error("stop upload, {}", responseData.getMessage());
             } else {
-                boolean success = doUpload(file);
-                for (int i = 0; i < 2 && !success; i++) {
-                    log.warn("retry upload: {}", file.getAbsolutePath());
-                    success = doUpload(file);
-                }
-                if (!success) {
-                    log.error("upload file: {} after retry 3 times, still failed.", file.getAbsolutePath());
-                }
+                pass = true;
             }
         } catch (IOException e) {
-            log.error("Upload commit log error. file: " + file.getAbsolutePath(), e);
-            reset();
+            log.error("network error, suspend a while.", e);
+            try {
+                TimeUnit.SECONDS.sleep(3);
+                // retry
+                pass = preUpload(file);
+            } catch (InterruptedException ignore) {
+                log.warn("InterruptedException", ignore);
+            }
         }
-
+        return pass;
     }
 
     private void reset() {

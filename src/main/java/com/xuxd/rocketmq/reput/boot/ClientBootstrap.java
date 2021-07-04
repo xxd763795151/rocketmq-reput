@@ -68,6 +68,7 @@ public class ClientBootstrap extends Bootstrap {
             executorService.scheduleWithFixedDelay(() -> {
                  serviceCache.get(k).scan();
             }, clientConfig.getScanInterval(), clientConfig.getScanInterval(), TimeUnit.MINUTES);
+//            }, 1, 10, TimeUnit.SECONDS);
             queue.poll();
             while (!queue.isEmpty()) {
                 // delay a while
