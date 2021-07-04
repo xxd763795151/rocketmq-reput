@@ -56,6 +56,23 @@ public class ServerBootstrap extends Bootstrap {
         checkStoreHome();
         startReputService();
         messageService.registerReputService(serviceCache);
+        clearDirtyData();
+    }
+
+    private void clearDirtyData() {
+        log.info("clear dirty data.");
+        serverConfig.getStore().forEach((k, v) -> {
+            String zipPath = PathUtil.getZipDir(v);
+            File zipDir = new File(zipPath);
+            if (zipDir.exists()) {
+                try {
+                    FileUtils.forceDelete(zipDir);
+                    log.info("delete dir: {}", zipDir.getAbsolutePath());
+                } catch (IOException e) {
+                    log.error("clear dirty data error, file: " + zipDir.getAbsolutePath(), e);
+                }
+            }
+        });
     }
 
     private void startReputService() {

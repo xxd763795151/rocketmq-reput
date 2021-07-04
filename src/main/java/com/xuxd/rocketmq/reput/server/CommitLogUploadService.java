@@ -94,7 +94,7 @@ public class CommitLogUploadService {
 
         if (md5 != null) {
             String dstMd5 = MD5Util.md5(commitlog);
-            if (dstMd5 != null) {
+            if (dstMd5 != null && !md5.equals(dstMd5)) {
                 log.error("commit log md5 check failed, src:{}, dst:{}", md5, dstMd5);
                 return ResponseData.create().fail(ResponseCode.FILE_NOT_MATCH.getCode(), "file check failed");
             }

@@ -26,7 +26,8 @@ class ShellUtil {
         String command = "md5sum";
         try {
             Process process = Runtime.getRuntime().exec(command + " " + file.getAbsolutePath());
-            return getStringResult(process);
+            String md5Res = getStringResult(process);
+            return md5Res.split(" ")[0].trim();
         } catch (Exception e) {
             log.error("md5 compute error", e);
             return null;

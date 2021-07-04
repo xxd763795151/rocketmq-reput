@@ -194,7 +194,7 @@ public class CommitlogScanService {
         long expireTime;
 
         public ExpireFileFilter(int expireHour) {
-            this.expireTime = expireHour * 3600;
+            this.expireTime = expireHour * 3600 * 1000;
         }
 
         @Override public boolean accept(File file) {
