@@ -32,12 +32,12 @@ rocketmq:
       scanInterval: 1
       # 过滤文件大小，MB
       fileFilterSize: 950
-      # 过期时间，单位小时
+      # 过期时间，单位小时，从文件的最后访问时间算起，如果原服务器保存两天
       expireTime: 48
     # SERVER 模式的配置
     server:
-      # 服务端文件保存时间(h)
-      fileReservedTime: 48
+      # 服务端文件保存时间(h)，从文件的最后访问时间算起，如果原服务器保存两天，这里也要保存两天，需要加上原来的48小时
+      fileReservedTime: 96
       # 过期文件删除时间
       deleteWhen: 04
       # 是否启用Dledger模式

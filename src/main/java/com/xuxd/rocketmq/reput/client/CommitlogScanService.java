@@ -24,7 +24,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.AbstractFileFilter;
 import org.apache.commons.io.filefilter.IOFileFilter;
-import org.apache.commons.io.filefilter.SizeFileFilter;
 
 /**
  * rocketmq-reput. Scan commitlog, if commit log expired then bakup it.
@@ -45,9 +44,7 @@ public class CommitlogScanService {
 
     private final long _1M = 1024 * 1024;
 
-    private final IOFileFilter sizeFilter;
-
-    private final IOFileFilter expireFilter;
+    private final IOFileFilter fileFilter;
 
     private long lastTime = 0;
 
@@ -60,8 +57,7 @@ public class CommitlogScanService {
         this.node = node;
         this.rootDirPath = rootDirPath;
         this.rootDir = new File(rootDirPath);
-        this.expireFilter = new ExpireFileFilter(config.getExpireTime());
-        this.sizeFilter = new SizeFileFilter(_1M * config.getFileFilterSize());
+        this.fileFilter = new ExpireAndSizeFileFilter(config.getExpireTime(), _1M * config.getFileFilterSize());
         // load commit log to queue
 //        load();
         executorService.execute(() -> {
@@ -174,7 +170,7 @@ public class CommitlogScanService {
             return;
         }
 
-        Collection<File> files = FileUtils.listFiles(rootDir, sizeFilter, expireFilter);
+        Collection<File> files = FileUtils.listFiles(rootDir, fileFilter, null);
         List<File> fileList = new ArrayList<>(files);
         // sort by last modify time.
         Collections.sort(fileList, (o1, o2) -> (int) (o1.lastModified() - o2.lastModified()));
@@ -189,20 +185,28 @@ public class CommitlogScanService {
         }
     }
 
-    class ExpireFileFilter extends AbstractFileFilter {
+    class ExpireAndSizeFileFilter extends AbstractFileFilter {
 
         long expireTime;
 
-        public ExpireFileFilter(int expireHour) {
+        long size;
+
+        public ExpireAndSizeFileFilter(long expireHour, long size) {
             this.expireTime = expireHour * 3600 * 1000;
+            this.size = size;
         }
 
         @Override public boolean accept(File file) {
-            return accept(file, file.getName());
+            return isLager(file) && isExpired(file);
         }
 
-        @Override public boolean accept(File dir, String name) {
-            return !dir.isDirectory() && (dir.lastModified() + expireTime < System.currentTimeMillis());
+        private boolean isLager(File file) {
+            return file.length() > size;
         }
+
+        private boolean isExpired(File file) {
+            return file.lastModified() + expireTime < System.currentTimeMillis();
+        }
+
     }
 }
