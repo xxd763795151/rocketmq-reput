@@ -14,7 +14,7 @@ public class OSUtil {
     private OSUtil() {
     }
 
-    public static void platCheck() {
+    public static void platformCheck() {
         String os = System.getProperty("os.name");
         log.info("os: {}", os);
         if (os.toLowerCase().contains("win")) {

@@ -8,7 +8,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class RocketmqReputApplication {
 
     public static void main(String[] args) {
-        OSUtil.platCheck();
+        OSUtil.platformCheck();
         SpringApplication.run(RocketmqReputApplication.class, args);
     }
 
