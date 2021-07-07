@@ -365,7 +365,7 @@ public class ReputCommitLog {
                 if (mappedFile.getReadPosition() <= offset && offset < getMaxOffset()) {
                     long nextFileOffset = rollNextFile(offset);
                     MappedFile nextFile = this.mappedFileQueue.findMappedFileByOffset(nextFileOffset, false);
-                    if (nextFile != null) {
+                    if (nextFile != null && nextFile.hold()) {
                         ByteBuffer byteBuffer = nextFile.getMappedByteBuffer().slice();
                         byteBuffer.position(0);
                         int size = nextFile.getReadPosition() - 0;
