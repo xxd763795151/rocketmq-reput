@@ -1,5 +1,6 @@
 # rocketmq-reput
-rocketmq数据无限持久化备份解决方案：过期消息备份、检索、重新消费
+rocketmq数据无限持久化备份解决方案：过期消息备份、检索、重新消费。  
+原理就是将rocketmq的commit log文件备份到其它主机，重新解析，可以类比mysql的bin log备份，重新解析来进行理解。详细说明看这：https://blog.csdn.net/x763795151/article/details/118500973
 # 使用
 ## 部署
 1. 打包： `sh package.sh`  
