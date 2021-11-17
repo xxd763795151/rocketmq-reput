@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>com.xuxd</groupId>
 	<artifactId>rocketmq-reput</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>1.0.0</version>
 	<name>rocketmq-reput</name>
 	<description>rocketmq commitlog reput for bakup</description>
 	<properties>
